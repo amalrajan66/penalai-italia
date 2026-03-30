@@ -163,9 +163,9 @@ def initialize_session_state() -> None:
 
 
 def get_api_credentials() -> tuple[str, str | None]:
-    """Read API credentials from Streamlit secrets first, then environment variables."""
-    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
-    api_base = st.secrets.get("OPENAI_API_BASE", os.getenv("OPENAI_API_BASE", None))
+    """Read API credentials from environment variables (Railway-friendly)."""
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    api_base = os.getenv("OPENAI_API_BASE", None)
     return api_key, api_base
 
 
@@ -252,15 +252,15 @@ def index_documents(uploaded_files) -> None:
 
 
 def get_llm() -> ChatOpenAI:
-    """Instantiate an OpenAI-compatible chat client using secrets or env vars."""
+    """Instantiate an OpenAI-compatible chat client using environment variables."""
     api_key, api_base = get_api_credentials()
     if not api_key:
         raise ValueError(
-            "OPENAI_API_KEY non trovato. Inseriscilo in Streamlit secrets o nelle variabili d'ambiente."
+            "OPENAI_API_KEY non trovato. Imposta la variabile d'ambiente nel tuo deployment."
         )
 
     client_kwargs = {
-        "model": os.getenv("OPENAI_MODEL", st.secrets.get("OPENAI_MODEL", "gpt-4o-mini")),
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         "temperature": 0.2,
         "api_key": api_key,
     }
@@ -333,19 +333,24 @@ def render_sidebar() -> None:
             for name in st.session_state.indexed_docs:
                 st.markdown(f"- {name}")
         else:
-            st.markdown("<span class='small-note'>Nessun documento indicizzato.</span>", unsafe_allow_html=True)
+            st.markdown(
+                "<span class='small-note'>Nessun documento indicizzato.</span>",
+                unsafe_allow_html=True,
+            )
 
         st.markdown("### Configurazione")
         st.markdown(
-            "<span class='small-note'>API key letta da <code>st.secrets[\"OPENAI_API_KEY\"]</code> "
-            "o dalle variabili d'ambiente.</span>",
+            "<span class='small-note'>API key letta dalle variabili d'ambiente del deployment.</span>",
             unsafe_allow_html=True,
         )
 
 
 def render_header() -> None:
     """Render the top hero section and quick explanation."""
-    st.markdown("<div class='legal-badge'>Italian Criminal Law • AI Decision Support</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='legal-badge'>Italian Criminal Law • AI Decision Support</div>",
+        unsafe_allow_html=True,
+    )
     st.markdown(
         f"""
         <div class="hero">
@@ -356,7 +361,9 @@ def render_header() -> None:
         unsafe_allow_html=True,
     )
     st.markdown(
-        "Carica atti, sentenze, capi di imputazione o altri PDF processuali, indicizzali e poni domande in italiano o in inglese.")
+        "Carica atti, sentenze, capi di imputazione o altri PDF processuali, "
+        "indicizzali e poni domande in italiano o in inglese."
+    )
 
 
 def render_upload_section() -> List:
@@ -387,7 +394,9 @@ def render_upload_section() -> List:
                 "collection_name",
                 "documents_indexed",
             ]:
-                st.session_state[key] = [] if key in ["chat_history", "indexed_docs", "last_sources"] else None
+                st.session_state[key] = (
+                    [] if key in ["chat_history", "indexed_docs", "last_sources"] else None
+                )
             st.session_state.documents_indexed = False
             st.success("Sessione azzerata.")
     return uploaded_files
