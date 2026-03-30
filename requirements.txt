@@ -7,3 +7,4 @@ pypdf
 chromadb
 sentence-transformers
 pydantic<2.0.0
+langchain-chroma
