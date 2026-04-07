@@ -13,13 +13,13 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-APP_TITLE = "Thriving Serenity"
+APP_TITLE ="Sonnet Malakaran"
 APP_SUBTITLE = "Decision Support per il Diritto Penale Italiano"
-APP_CLIENT = "Created for Sonnet Malakaran"
+APP_CLIENT = "Sonnet Malakaran"
 DISCLAIMER = "For human review only - not legal advice"
 PERSIST_DIRECTORY = Path("./chroma_db")
 UPLOAD_DIRECTORY = Path("./uploaded_pdfs")
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+#EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 SYSTEM_PROMPT = """Sei un assistente legale specializzato nel diritto penale italiano.
 Analizza i documenti forniti e rispondi in modo strutturato.
 Indica sempre: 1) il problema giuridico principale, 2) gli articoli rilevanti del codice penale o di procedura penale, 3) i possibili percorsi procedurali, 4) le strategie possibili.
