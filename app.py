@@ -11,8 +11,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 APP_TITLE = "PenalAI Italia"
 APP_SUBTITLE = "Decision Support per il Diritto Penale Italiano"
@@ -169,10 +168,15 @@ def get_api_credentials() -> tuple[str, str | None]:
     return api_key, api_base
 
 
-def get_embeddings() -> HuggingFaceEmbeddings:
-    """Create the local embedding model used for Chroma indexing."""
-    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-
+def get_embeddings():
+    """Create OpenAI embeddings for Railway-friendly deployment."""
+    api_key, api_base = get_api_credentials()
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY non trovato.")
+    kwargs = {"api_key": api_key}
+    if api_base:
+        kwargs["base_url"] = api_base
+    return OpenAIEmbeddings(model="text-embedding-3-small", **kwargs)
 
 def save_uploaded_files(uploaded_files) -> List[Path]:
     """Persist uploaded PDF files so LangChain loaders can process them."""
