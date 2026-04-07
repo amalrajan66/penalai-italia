@@ -13,8 +13,9 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-APP_TITLE = "PenalAI Italia"
+APP_TITLE = "Thriving Serenity"
 APP_SUBTITLE = "Decision Support per il Diritto Penale Italiano"
+APP_CLIENT = "Created for Sonnet Malakaran"
 DISCLAIMER = "For human review only - not legal advice"
 PERSIST_DIRECTORY = Path("./chroma_db")
 UPLOAD_DIRECTORY = Path("./uploaded_pdfs")
@@ -30,7 +31,6 @@ EXAMPLE_QUESTIONS = [
 ]
 
 
-# Page configuration must be set before other Streamlit UI elements.
 st.set_page_config(
     page_title=APP_TITLE,
     page_icon="⚖️",
@@ -39,104 +39,239 @@ st.set_page_config(
 )
 
 
-# Global styling for a polished dark theme suitable for legal demos.
 st.markdown(
     """
     <style>
     :root {
-        --bg: #0b1020;
-        --panel: #121a2f;
-        --panel-2: #18233f;
-        --text: #e8ecf8;
-        --muted: #aab4d0;
-        --accent: #d4af37;
-        --accent-2: #7aa2ff;
-        --danger: #ff7b7b;
-        --border: rgba(255, 255, 255, 0.08);
+        --bg: #f5f1e8;
+        --panel: #fcfaf6;
+        --panel-2: #f1eadf;
+        --panel-3: #e8dfd1;
+        --text: #1e2430;
+        --muted: #5f6b7a;
+        --soft: #7c8795;
+        --accent: #8a6a2f;
+        --accent-2: #234a6b;
+        --danger-bg: #fff1f1;
+        --danger-border: #e7b6b6;
+        --danger-text: #8a3d3d;
+        --border: rgba(30, 36, 48, 0.10);
+        --shadow: 0 10px 30px rgba(36, 38, 44, 0.08);
     }
+
     .stApp {
         background:
-            radial-gradient(circle at top left, rgba(122,162,255,0.15), transparent 30%),
-            radial-gradient(circle at top right, rgba(212,175,55,0.12), transparent 26%),
-            linear-gradient(180deg, #0a0f1d 0%, #0d1426 100%);
+            radial-gradient(circle at top right, rgba(138, 106, 47, 0.07), transparent 24%),
+            radial-gradient(circle at top left, rgba(35, 74, 107, 0.06), transparent 20%),
+            linear-gradient(180deg, #f8f4ec 0%, #f3ede3 100%);
         color: var(--text);
     }
+
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f1830 0%, #0a1222 100%);
-        border-right: 1px solid var(--border);
+        background: linear-gradient(180deg, #eee6d8 0%, #e8dece 100%);
+        border-right: 1px solid rgba(30, 36, 48, 0.08);
     }
+
+    .main .block-container {
+        padding-top: 2.1rem;
+        padding-bottom: 2rem;
+        max-width: 1180px;
+    }
+
+    .hero-wrap {
+        margin-bottom: 1.1rem;
+    }
+
+    .legal-badge {
+        display: inline-block;
+        padding: 0.42rem 0.82rem;
+        border-radius: 999px;
+        background: rgba(138, 106, 47, 0.10);
+        color: #6f5423;
+        border: 1px solid rgba(138, 106, 47, 0.16);
+        font-size: 0.92rem;
+        font-weight: 600;
+        margin-bottom: 0.9rem;
+    }
+
     .hero {
-        background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(122,162,255,0.12));
+        background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(241,234,223,0.92));
         border: 1px solid var(--border);
-        padding: 1.4rem 1.6rem;
-        border-radius: 18px;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        padding: 1.65rem 1.6rem;
+        border-radius: 22px;
+        margin-bottom: 0.8rem;
+        box-shadow: var(--shadow);
     }
+
+    .hero-topline {
+        color: var(--accent-2);
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.65rem;
+    }
+
     .hero h1 {
         margin: 0;
         color: var(--text);
-        font-size: 2rem;
+        font-size: 2.35rem;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
     }
-    .hero p {
-        margin: 0.35rem 0 0 0;
+
+    .hero .subtitle {
+        margin: 0.55rem 0 0 0;
         color: var(--muted);
-        font-size: 1rem;
+        font-size: 1.08rem;
+        line-height: 1.7;
+        max-width: 900px;
     }
-    .legal-badge {
+
+    .hero .client-line {
+        margin-top: 1rem;
         display: inline-block;
-        padding: 0.35rem 0.7rem;
-        border-radius: 999px;
-        background: rgba(212,175,55,0.14);
-        color: #f4d77a;
-        border: 1px solid rgba(212,175,55,0.24);
-        font-size: 0.85rem;
-        margin-bottom: 0.8rem;
+        padding: 0.55rem 0.85rem;
+        border-radius: 12px;
+        background: rgba(35, 74, 107, 0.08);
+        color: var(--accent-2);
+        border: 1px solid rgba(35, 74, 107, 0.12);
+        font-size: 0.98rem;
+        font-weight: 700;
     }
+
+    .intro-copy {
+        color: var(--text);
+        font-size: 1.05rem;
+        line-height: 1.8;
+        margin: 0.3rem 0 1.2rem 0;
+        max-width: 920px;
+    }
+
     .disclaimer-box {
-        background: rgba(255,123,123,0.08);
-        border: 1px solid rgba(255,123,123,0.18);
-        color: #ffd6d6;
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        color: var(--danger-text);
         border-radius: 14px;
-        padding: 0.9rem 1rem;
-        margin: 0.8rem 0 1rem 0;
+        padding: 0.95rem 1rem;
+        margin: 0.9rem 0 1rem 0;
+        line-height: 1.65;
     }
+
     .source-card {
-        background: rgba(255,255,255,0.03);
+        background: rgba(255,255,255,0.65);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 0.9rem 1rem;
-        margin-bottom: 0.8rem;
+        border-radius: 16px;
+        padding: 1rem 1rem;
+        margin-bottom: 0.9rem;
+        box-shadow: 0 4px 18px rgba(25, 28, 36, 0.04);
     }
+
     .source-title {
         color: var(--accent);
         font-weight: 700;
         margin-bottom: 0.35rem;
+        font-size: 1rem;
     }
+
     .source-meta {
         color: var(--muted);
-        font-size: 0.9rem;
-        margin-bottom: 0.4rem;
+        font-size: 0.95rem;
+        margin-bottom: 0.45rem;
     }
+
     .small-note {
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
-    .stButton > button, .stDownloadButton > button {
-        border-radius: 12px;
-        border: 1px solid rgba(212,175,55,0.3);
-        background: linear-gradient(135deg, rgba(212,175,55,0.22), rgba(122,162,255,0.18));
-        color: white;
-        font-weight: 600;
-    }
-    .stTextInput > div > div > input, .stTextArea textarea {
-        background-color: rgba(255,255,255,0.04);
+
+    .stMarkdown p,
+    .stMarkdown li,
+    .stChatMessage p,
+    div[data-testid="stChatMessageContent"] p {
+        font-size: 1.04rem;
+        line-height: 1.8;
         color: var(--text);
     }
+
+    h1, h2, h3 {
+        color: var(--text);
+        letter-spacing: -0.02em;
+    }
+
+    h2, h3 {
+        margin-top: 0.35rem;
+    }
+
+    .stButton > button,
+    .stDownloadButton > button {
+        border-radius: 12px;
+        border: 1px solid rgba(138, 106, 47, 0.25);
+        background: linear-gradient(135deg, #8a6a2f, #6f5423);
+        color: #fffdf8;
+        font-weight: 700;
+        min-height: 2.9rem;
+    }
+
+    .stButton > button:hover,
+    .stDownloadButton > button:hover {
+        border-color: rgba(138, 106, 47, 0.36);
+        filter: brightness(1.03);
+    }
+
+    .stTextInput > div > div > input,
+    .stTextArea textarea,
+    div[data-testid="stFileUploader"] section {
+        background-color: rgba(255,255,255,0.68) !important;
+        color: var(--text) !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(30, 36, 48, 0.12) !important;
+    }
+
     [data-testid="stChatMessage"] {
-        background: rgba(255,255,255,0.03);
+        background: rgba(255,255,255,0.52);
         border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 0.35rem 0.4rem;
+    }
+
+    div[data-testid="stExpander"] {
+        background: rgba(255,255,255,0.45);
         border-radius: 16px;
+        border: 1px solid rgba(30, 36, 48, 0.08);
+    }
+
+    label, .stFileUploader label, .stTextInput label {
+        color: var(--text) !important;
+        font-weight: 600;
+    }
+
+    .stCaption, .st-emotion-cache-1wivap2 {
+        color: var(--muted) !important;
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 1.2rem 1rem;
+        }
+
+        .hero h1 {
+            font-size: 1.85rem;
+        }
+
+        .hero .subtitle,
+        .intro-copy,
+        .stMarkdown p,
+        .stMarkdown li {
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .hero .client-line {
+            width: 100%;
+            text-align: center;
+        }
     }
     </style>
     """,
@@ -145,7 +280,6 @@ st.markdown(
 
 
 def initialize_session_state() -> None:
-    """Initialize all session keys used by the app."""
     defaults = {
         "vectorstore": None,
         "retriever": None,
@@ -162,14 +296,12 @@ def initialize_session_state() -> None:
 
 
 def get_api_credentials() -> tuple[str, str | None]:
-    """Read API credentials from environment variables (Railway-friendly)."""
     api_key = os.getenv("OPENAI_API_KEY", "")
     api_base = os.getenv("OPENAI_API_BASE", None)
     return api_key, api_base
 
 
 def get_embeddings():
-    """Create OpenAI embeddings for Railway-friendly deployment."""
     api_key, api_base = get_api_credentials()
     if not api_key:
         raise ValueError("OPENAI_API_KEY non trovato.")
@@ -178,8 +310,8 @@ def get_embeddings():
         kwargs["base_url"] = api_base
     return OpenAIEmbeddings(model="text-embedding-3-small", **kwargs)
 
+
 def save_uploaded_files(uploaded_files) -> List[Path]:
-    """Persist uploaded PDF files so LangChain loaders can process them."""
     UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
     saved_paths = []
     for uploaded_file in uploaded_files:
@@ -191,7 +323,6 @@ def save_uploaded_files(uploaded_files) -> List[Path]:
 
 
 def load_pdf_documents(pdf_paths: List[Path]) -> List[Document]:
-    """Read all PDF pages and attach clean metadata for citations."""
     documents: List[Document] = []
     for pdf_path in pdf_paths:
         loader = PyPDFLoader(str(pdf_path))
@@ -204,31 +335,27 @@ def load_pdf_documents(pdf_paths: List[Path]) -> List[Document]:
 
 
 def split_documents(documents: List[Document]) -> List[Document]:
-    """Chunk PDF text into citation-friendly passages."""
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1200,
         chunk_overlap=200,
-        separators=["\n\n", "\n", ". ", " ", ""],
+        separators=["\\n\\n", "\\n", ". ", " ", ""],
     )
     return splitter.split_documents(documents)
 
 
 def build_collection_name(file_names: List[str]) -> str:
-    """Create a deterministic Chroma collection name from the current upload set."""
     joined = "|".join(sorted(file_names))
     digest = hashlib.md5(joined.encode("utf-8")).hexdigest()[:12]
     return f"penalai_{digest}"
 
 
 def clear_existing_collection(collection_name: str) -> None:
-    """Remove an old collection folder to allow clean re-indexing."""
     collection_path = PERSIST_DIRECTORY / collection_name
     if collection_path.exists():
         shutil.rmtree(collection_path, ignore_errors=True)
 
 
 def index_documents(uploaded_files) -> None:
-    """Save PDFs, parse them, chunk them, and persist a Chroma vector store."""
     if not uploaded_files:
         st.warning("Carica almeno un PDF prima di indicizzare.")
         return
@@ -256,7 +383,6 @@ def index_documents(uploaded_files) -> None:
 
 
 def get_llm() -> ChatOpenAI:
-    """Instantiate an OpenAI-compatible chat client using environment variables."""
     api_key, api_base = get_api_credentials()
     if not api_key:
         raise ValueError(
@@ -274,7 +400,6 @@ def get_llm() -> ChatOpenAI:
 
 
 def build_rag_prompt() -> ChatPromptTemplate:
-    """Create the prompt template for structured, source-grounded legal answers."""
     template = """
 {system_prompt}
 
@@ -295,17 +420,15 @@ Istruzioni aggiuntive:
 
 
 def format_context(docs: List[Document]) -> str:
-    """Convert retrieved chunks into a context block for the model."""
     formatted_chunks = []
     for doc in docs:
         source = doc.metadata.get("source", "Documento sconosciuto")
         page = doc.metadata.get("page", "?")
-        formatted_chunks.append(f"[Fonte: {source} - pagina {page}]\n{doc.page_content}")
-    return "\n\n".join(formatted_chunks)
+        formatted_chunks.append(f"[Fonte: {source} - pagina {page}]\\n{doc.page_content}")
+    return "\\n\\n".join(formatted_chunks)
 
 
 def answer_question(question: str) -> tuple[str, List[Document]]:
-    """Run retrieval and generate a grounded response with an OpenAI-compatible model."""
     if not st.session_state.retriever:
         raise ValueError("Indicizza prima i documenti per poter porre domande.")
 
@@ -324,10 +447,13 @@ def answer_question(question: str) -> tuple[str, List[Document]]:
 
 
 def render_sidebar() -> None:
-    """Render the legal branding, disclaimer, and indexed document list."""
     with st.sidebar:
         st.markdown(f"## ⚖️ {APP_TITLE}")
         st.caption(APP_SUBTITLE)
+        st.markdown(
+            f"<div class='small-note' style='margin-bottom:0.75rem;'><strong>{APP_CLIENT}</strong></div>",
+            unsafe_allow_html=True,
+        )
         st.markdown(
             f"<div class='disclaimer-box'><strong>Disclaimer:</strong><br>{DISCLAIMER}</div>",
             unsafe_allow_html=True,
@@ -350,7 +476,7 @@ def render_sidebar() -> None:
 
 
 def render_header() -> None:
-    """Render the top hero section and quick explanation."""
+    st.markdown("<div class='hero-wrap'>", unsafe_allow_html=True)
     st.markdown(
         "<div class='legal-badge'>Italian Criminal Law • AI Decision Support</div>",
         unsafe_allow_html=True,
@@ -358,20 +484,22 @@ def render_header() -> None:
     st.markdown(
         f"""
         <div class="hero">
+            <div class="hero-topline">Legal Analysis Workspace</div>
             <h1>{APP_TITLE}</h1>
-            <p>{APP_SUBTITLE}</p>
+            <p class="subtitle">{APP_SUBTITLE}</p>
+            <div class="client-line">{APP_CLIENT}</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    st.markdown("</div>", unsafe_allow_html=True)
     st.markdown(
-        "Carica atti, sentenze, capi di imputazione o altri PDF processuali, "
-        "indicizzali e poni domande in italiano o in inglese."
+        "<div class='intro-copy'>Carica atti, sentenze, capi di imputazione o altri PDF processuali, indicizzali e poni domande in italiano o in inglese. L'interfaccia è ottimizzata per una lettura più chiara delle risposte e delle fonti.</div>",
+        unsafe_allow_html=True,
     )
 
 
 def render_upload_section() -> List:
-    """Render uploader controls and return uploaded files."""
     st.markdown("### Documenti")
     uploaded_files = st.file_uploader(
         "Carica uno o più PDF del fascicolo",
@@ -407,7 +535,6 @@ def render_upload_section() -> List:
 
 
 def render_example_questions() -> None:
-    """Render clickable question shortcuts for common legal workflows."""
     st.markdown("### Domande di esempio")
     cols = st.columns(3)
     for idx, question in enumerate(EXAMPLE_QUESTIONS):
@@ -416,7 +543,6 @@ def render_example_questions() -> None:
 
 
 def render_chat_history() -> None:
-    """Show all prior messages stored in session state."""
     for message in st.session_state.chat_history:
         if isinstance(message, HumanMessage):
             with st.chat_message("user"):
@@ -427,7 +553,6 @@ def render_chat_history() -> None:
 
 
 def render_sources(docs: List[Document]) -> None:
-    """Render expandable source passages with exact page references."""
     with st.expander("Sources", expanded=True):
         if not docs:
             st.info("Nessuna fonte disponibile per questa risposta.")
@@ -435,7 +560,7 @@ def render_sources(docs: List[Document]) -> None:
         for idx, doc in enumerate(docs, start=1):
             source = doc.metadata.get("source", "Documento sconosciuto")
             page = doc.metadata.get("page", "?")
-            passage = doc.page_content.strip().replace("\n", " ")
+            passage = doc.page_content.strip().replace("\\n", " ")
             st.markdown(
                 f"""
                 <div class="source-card">
@@ -449,7 +574,6 @@ def render_sources(docs: List[Document]) -> None:
 
 
 def process_question(question: str) -> None:
-    """Handle a user query, store messages, and display sources."""
     if not question:
         return
 
@@ -476,7 +600,6 @@ def process_question(question: str) -> None:
 
 
 def main() -> None:
-    """Run the Streamlit application."""
     initialize_session_state()
     render_sidebar()
     render_header()
